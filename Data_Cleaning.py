@@ -24,19 +24,19 @@ testing.name='Testing'
 processing = [training, testing]
 
 
-for dataset in processing:
-    #Categorical columns
-    unknown_cols = ['gender','relevent_experience', 'enrolled_university', 'education_level',
-                    'major_discipline','company_type']    
-    for col in unknown_cols:
-        dataset[col] = dataset[col].fillna('Unknown')
+#for dataset in processing:
+#    #Categorical columns
+#    unknown_cols = ['gender','relevent_experience', 'enrolled_university', 'education_level',
+#                    'major_discipline','company_type']    
+#    for col in unknown_cols:
+#        dataset[col] = dataset[col].fillna('Unknown')
         
     
     #Numeric columns
-    numeric_cols = ['experience', 'company_size','last_new_job', 'training_hours', 
-                    'city_development_index']
-    for col in numeric_cols:
-        dataset[col] = dataset[col].fillna(9999)
+ #   numeric_cols = ['experience', 'company_size','last_new_job', 'training_hours', 
+ #                   'city_development_index']
+ #   for col in numeric_cols:
+ #       dataset[col] = dataset[col].fillna(9999)
         
     
 #%%
@@ -98,8 +98,7 @@ for dataset in processing:
     dataset[col].replace('<1', '0', inplace=True)
     dataset[col] = pd.to_numeric(dataset[col])
 
-    print('NaN', dataset.name,':', (dataset[col] == 9999).sum())
-
+    print('NaN', dataset.name,':', (dataset[col].isna()).sum())
 
 
 
@@ -117,7 +116,7 @@ binning = {9999:'Unknown', '50-99':'Small', '<10':'Small', '10000+':'Large', '50
 
 for dataset in processing: 
     dataset[col].replace(binning, inplace=True)
-    print('NaN', dataset.name,':', (dataset[col] == 'Unknown').sum())
+    print('NaN', dataset.name,':', (dataset[col].isna()).sum())
 
 
 
@@ -136,7 +135,7 @@ binning = {'Funded Startup':'Startup',  'Early Stage Startup':'Startup'}
 
 for dataset in processing:
     dataset[col].replace(binning, inplace=True)  
-    print('NaN', dataset.name,':', (dataset[col] == 'Unknown').sum())
+    print('NaN', dataset.name,':', (dataset[col].isna()).sum())
 
 
 
@@ -156,7 +155,7 @@ binning = {'never':'0', '>4':'5'}
 for dataset in processing:
     dataset[col].replace(binning, inplace=True)
     dataset[col] = pd.to_numeric(dataset[col])
-    print('NaN', dataset.name,':', (dataset[col] == 9999).sum())
+    print('NaN', dataset.name,':', (dataset[col].isna()).sum())
 
 
 
@@ -173,7 +172,7 @@ binning = {'Has relevent experience':1, 'No relevent experience':0}
 
 for dataset in processing:
     dataset[col].replace(binning, inplace=True)
-    print('NaN', dataset.name,':', (dataset[col] == 'Unknown').sum())
+    print('NaN', dataset.name,':', (dataset[col].isna()).sum())
     
     
     
@@ -190,7 +189,7 @@ binning = {'Graduate':'Bachelors','High School':'PublicEducation','Primary Schoo
 
 for dataset in processing:
     dataset[col].replace(binning, inplace=True)
-    print('NaN', dataset.name,':', (dataset[col] == 'Unknown').sum())
+    print('NaN', dataset.name,':', (dataset[col].isna()).sum())
 
 
 
@@ -202,7 +201,7 @@ for dataset in processing:
 #Print a demo plot of all processed columns
 for col in dataset.columns:
     print('\n\n------',col,'-------')
-    dataset[col][dataset[col]!=9999].hist()
+    dataset[col].hist()
     plt.title(col)
     plt.ylabel('Count')
     plt.show()
