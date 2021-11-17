@@ -5,6 +5,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+#Imputer
+from sklearn.impute import SimpleImputer
+
+
 path = os.path.abspath(r'C:\Users\Mariko\Documents\GitHub\Baysian_HR_Analytics')
 #%%
 
@@ -22,22 +26,7 @@ training.name='Training'
 testing.name='Testing'
 
 processing = [training, testing]
-
-
-#for dataset in processing:
-#    #Categorical columns
-#    unknown_cols = ['gender','relevent_experience', 'enrolled_university', 'education_level',
-#                    'major_discipline','company_type']    
-#    for col in unknown_cols:
-#        dataset[col] = dataset[col].fillna('Unknown')
-        
-    
-    #Numeric columns
- #   numeric_cols = ['experience', 'company_size','last_new_job', 'training_hours', 
- #                   'city_development_index']
- #   for col in numeric_cols:
- #       dataset[col] = dataset[col].fillna(9999)
-        
+       
     
 #%%
 
@@ -212,8 +201,43 @@ for col in dataset.columns:
 
 # Export the Cleaned Data (no Nan replce)
 for dataset in processing:
-    file=dataset.name+'_cleaned.csv'
+    file=path+'\\Data\\'+dataset.name+'_cleaned.csv'
     dataset.to_csv(file)
+
+
+
+#%%
+
+#Impute Variables
+
+
+#Impute Training Set
+train_imput = processing[0].iloc[:,0:-1]
+
+imp_mean = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+
+train_imput_out = imp_mean.fit_transform(train_imput)
+train_imput_out = pd.DataFrame(train_imput_out, columns = train_imput.columns)
+train_imput_out['target'] = processing[0].iloc[:,-1]
+
+
+#Impute Testing Set
+
+test_imput = processing[1]
+
+imp_mean = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+
+test_imput_out = imp_mean.fit_transform(test_imput)
+test_imput_out = pd.DataFrame(test_imput_out, columns = test_imput.columns)
+
+
+
+# Export the Cleaned Data (with simple impute)
+train_imput_out.to_csv(path+'\\Data\\'+'Training_cleaned_impute.csv')
+test_imput_out.to_csv(path+'\\Data\\'+'Testing_cleaned_impute.csv')
+
+#%%
+
 
 
 
