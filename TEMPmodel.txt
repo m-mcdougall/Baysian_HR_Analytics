@@ -1,14 +1,10 @@
 
   model {
-  zA ~ dbin( thetaA , length(yA) )
-  
-  thetaA ~ dbeta( omegaA*(kappaA-2)+1 , (1-omegaA)*(kappaA-2)+1 )
-  omegaA ~ dbeta( 2 , 2 )
-  
-  kappaAMinusTwo ~ dgamma( 0.01 , 0.01 )
-  
-  kappaA = kappaAMinusTwo + 2
-
+  for ( i in 1:Ntotal ) {
+  y[i] ~ dbern( theta[s[i]] )
   }
-  
+  theta[1] ~ dbeta(1, 1)
+  theta[2] ~ dbeta(1, 1)
+  theta[3] ~ dbeta(10, 10)
+  }
   

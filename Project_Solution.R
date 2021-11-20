@@ -15,134 +15,6 @@
 
 source("DBDA2E-utilities.R")
 
-#===============================================================================
-genMCMC = function( data, numSavedSteps=50000 , saveName=NULL , thinSteps=1 ,
-                    runjagsMethod=runjagsMethodDefault , 
-                    nChains=nChainsDefault ) { 
-  require(rjags)
-  require(runjags)
-  paste('Now Loading.....')
-  
-  #-----------------------------------------------------------------------------
-  # THE DATA.
-  yA = data$relevant_experience
-
-  # Specify the data in a list, for later shipment to JAGS:
-  # This is where you specify all the variables that are in the string to jags
-  dataList = list(
-    yA = yA,
-    zA = sum(yA)
-
-  )
-  
-  #-----------------------------------------------------------------------------
-  # THE MODEL - String savd to txt ans sent to JAGS
-  modelString = "
-  model {
-  zA ~ dbin( thetaA , length(yA) )
-  
-  thetaA ~ dbeta( omegaA*(kappaA-2)+1 , (1-omegaA)*(kappaA-2)+1 )
-  omegaA ~ dbeta( 2 , 2 )
-  
-  kappaAMinusTwo ~ dgamma( 0.01 , 0.01 )
-  
-  kappaA = kappaAMinusTwo + 2
-
-  }
-  
-  " # close quote for modelString
-  writeLines( modelString , con="TEMPmodel.txt" )
-  
-  #-----------------------------------------------------------------------------
-  # INTIALIZE THE CHAINS.
-  # Initial values of MCMC chains based on data:
-  initsList = function() {
-    
-    #Resample the data to jitter the starting positions of the chains
-    resampledZA = rbinom(1, size=length(yA) , prob=sum(yA)/length(yA) )
-    
-    #Init values for theta based on the jittered values
-    thetaInitA = resampledZA/length(yA)
-
-    
-    #Set all omegas to the same starting value - the Mean of the jittered thetas
-    omegaInit = mean(c(thetaInitA))
-    
-    #Just set to 100
-    kappaMinusTwoInit = 100
-    
-    return( list( thetaA=thetaInitA,
-
-                  omegaA = omegaInit,
-
-                  kappaMinusTwo = kappaMinusTwoInit
-    ))
-  }
-  
-  #-----------------------------------------------------------------------------
-  # RUN THE CHAINS
-  parameters = c( "thetaA",  "omegaA","kappaA") 
-  adaptSteps = 500             # Number of steps to adapt the samplers
-  burnInSteps = 500            # Number of steps to burn-in the chains
-  
-  useRunjags = TRUE
-  if ( useRunjags ) {
-    runJagsOut <- run.jags( method=runjagsMethod ,
-                            model="TEMPmodel.txt" , 
-                            monitor=parameters , 
-                            data=dataList ,  
-                            inits=initsList , 
-                            n.chains=nChains ,
-                            adapt=adaptSteps ,
-                            burnin=burnInSteps , 
-                            sample=ceiling(numSavedSteps/nChains) ,
-                            thin=thinSteps ,
-                            summarise=FALSE ,
-                            plots=FALSE )
-    codaSamples = as.mcmc.list( runJagsOut )
-  } else {
-    # Create, initialize, and adapt the model:
-    jagsModel = jags.model( "TEMPmodel.txt" , data=dataList , inits=initsList , 
-                            n.chains=nChains , n.adapt=adaptSteps )
-    # Burn-in:
-    cat( "Burning in the MCMC chain...\n" )
-    update( jagsModel , n.iter=burnInSteps )
-    # The saved MCMC chain:
-    cat( "Sampling final MCMC chain...\n" )
-    codaSamples = coda.samples( jagsModel , variable.names=parameters , 
-                                n.iter=ceiling(numSavedSteps*thinSteps/nChains), 
-                                thin=thinSteps )
-  }  
-  
-  # resulting codaSamples object has these indices: 
-  #   codaSamples[[ chainIdx ]][ stepIdx , paramIdx ]
-  if ( !is.null(saveName) ) {
-    save( codaSamples , file=paste(saveName,"Mcmc.Rdata",sep="") )
-  }
-  return( codaSamples )
-}
-
-#===============================================================================
-plotMCMC = function( codaSamples , data ,
-                     compVal=0.5 , rope=NULL , 
-                     diffSList=NULL , diffCList=NULL , 
-                     compValDiff=0.0 , ropeDiff=NULL , 
-                     saveName=NULL , saveType="jpg" ) source("DBDA2E-utilities.R")
-#===============================================================================
-
-# # Generate glucose data
-# generateData = function() {
-#   # Generate test results using the sample function
-#   groupA = sample(x = c(0, 1), prob = c(0.4, 0.6), size = 100, replace = TRUE)
-#   groupB = sample(x = c(0, 1), prob = c(0.1, 0.9), size = 100, replace = TRUE)
-#   groupC = sample(x = c(0, 1), prob = c(0.5, 0.5), size = 100, replace = TRUE)
-# 
-#   glucoseData = data.frame(groupA, groupB, groupC)
-# 
-#   # Write glucose data file
-#   write.csv(glucoseData, file = "glucoseData.csv", row.names = FALSE)
-# }
-
 genMCMC = function( data , numSavedSteps=50000 , saveName=NULL ) { 
   require(rjags)
   #-----------------------------------------------------------------------------
@@ -150,9 +22,9 @@ genMCMC = function( data , numSavedSteps=50000 , saveName=NULL ) {
   # N.B.: This function expects the data to be a data frame, 
   # with one component named y being a vector of integer 0,1 values,
   # and one component named s being a factor of subject identifiers.
-  yA = data$groupA
-  yB = data$groupB
-  yC = data$groupC
+  yA = data$relevent_experience
+  yB = data$Company_Type_NGO
+  yC = data$Company_Type_Startup
   
   y = c(yA, yB, yC)
   s = c(rep(1, length(yA)), rep(2, length(yB)), rep(3, length(yC)))
