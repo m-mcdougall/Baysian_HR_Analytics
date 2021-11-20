@@ -238,6 +238,69 @@ test_imput_out.to_csv(path+'\\Data\\'+'Testing_cleaned_impute.csv')
 
 #%%
 
+# OHE Categorical Variables
+
+def ohe_vars(df_in):
+        
+    #Create base OHE
+    company_types_ohe = pd.get_dummies(df_in.company_type, prefix = 'Company_Type')
+    education_ohe = pd.get_dummies(df_in.education_level, prefix = 'Education_Higest')
+    education_total_ohe = pd.get_dummies(df_in.education_level, prefix = 'Education_Total')
+    
+  
+    
+    #For the Total Education, Add binary for all education levels 
+    #below the highest level achieved
+    
+    all_rows =[]
+    
+    for i in range(education_ohe.shape[0]):
+        row = education_total_ohe.iloc[i,:]
+        
+        highest = row[row==1].index[0]
+        if highest == 'Education_Total_PublicEducation':
+            pass
+        
+        elif highest == 'Education_Total_Bachelors':
+            row.Education_Total_PublicEducation = 1
+            
+        elif highest == 'Education_Total_Masters':
+            row.Education_Total_PublicEducation = 1
+            row.Education_Total_Bachelors = 1
+            
+        elif highest == 'Education_Total_Phd':
+            row.Education_Total_PublicEducation = 1
+            row.Education_Total_Bachelors = 1
+            row.Education_Total_Masters = 1
+    
+        all_rows.append(row)
+    
+    #Combine all processed rows
+    education_total_ohe = pd.DataFrame(all_rows)
+    
+    #Combine OHE frames
+    combo = company_types_ohe.join([education_ohe, education_total_ohe])
+    return combo
+
+#%%
+
+#Create OHE
+
+train_ohe = ohe_vars(train_imput_out)
+train_ohe_out = train_imput_out.join(train_ohe)
+
+test_ohe = ohe_vars(test_imput_out)
+test_ohe_out = test_imput_out.join(test_ohe)
+
+# Export the Cleaned Data (with OHE)
+train_ohe_out.to_csv(path+'\\Data\\'+'Training_cleaned_impute_OHE.csv')
+test_ohe_out.to_csv(path+'\\Data\\'+'Testing_cleaned_impute_OHE.csv')
+
+
+
+
+
+
 
 
 
