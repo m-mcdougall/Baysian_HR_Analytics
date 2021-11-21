@@ -24,7 +24,14 @@ rm(list=ls())  # Careful! This clears all of R's memory!
 
 #------------------------------------------------------------------------------- 
 # Read the data 
-myData = read.csv("Data/Testing_cleaned_impute_OHE.csv")
+
+data_ngo = read.csv("Data/Binary_target_Company_Type_NGO.csv")[2]
+data_public = read.csv("Data/Binary_target_Company_Type_Public Sector.csv")[2]
+data_private = read.csv("Data/Binary_target_Company_Type_Pvt Ltd.csv")[2]
+
+#myData = read.csv("Data/Testing_cleaned_impute_OHE.csv")
+
+myData=list(data_ngo, data_public,data_private)
 
 #------------------------------------------------------------------------------- 
 # Load the relevant model into R's working memory:
