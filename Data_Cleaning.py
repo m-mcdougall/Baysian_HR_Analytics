@@ -297,7 +297,52 @@ train_ohe_out.to_csv(path+'\\Data\\'+'Training_cleaned_impute_OHE.csv')
 test_ohe_out.to_csv(path+'\\Data\\'+'Testing_cleaned_impute_OHE.csv')
 
 
+#%%
 
+
+# Change colmns to represent people who work at company and do/don't want to leave
+
+
+    
+
+
+def binary_column_parser(df_in, col):
+    
+    #Seperate target and fileter column
+    targ = df_in['target']    
+    filt = df_in[col]
+    
+    #Only data where target is true
+    filt = filt[filt == 1]
+    
+    #Get targ data for those rows
+    targ_filt = targ.iloc[filt.index]
+    
+    #Replace
+    filt = targ_filt.rename(col).reset_index(drop=True)
+    
+    return filt
+
+filtered_columns = []
+
+
+
+for col in ['Company_Type_NGO', 'Company_Type_Other', 'Company_Type_Public Sector',
+            'Company_Type_Pvt Ltd', 'Company_Type_Startup',
+            'Education_Higest_Bachelors', 'Education_Higest_Masters',
+            'Education_Higest_Phd', 'Education_Higest_PublicEducation',
+            'Education_Total_Bachelors', 'Education_Total_Masters',
+            'Education_Total_Phd', 'Education_Total_PublicEducation']:
+
+    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+
+
+#%%
+
+for i in range(len(filtered_columns)):
+    name_df = filtered_columns[i].name
+    filtered_columns[i].to_csv(path+'\Data\Binary_target_'+name_df+'.csv')
+    
 
 
 

@@ -22,6 +22,7 @@ genMCMC = function( data , numSavedSteps=50000 , saveName=NULL ) {
   # N.B.: This function expects the data to be a data frame, 
   # with one component named y being a vector of integer 0,1 values,
   # and one component named s being a factor of subject identifiers.
+  
   yA = data$relevent_experience
   yB = data$Company_Type_NGO
   yC = data$Company_Type_Startup
