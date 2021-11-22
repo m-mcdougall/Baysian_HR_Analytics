@@ -82,13 +82,22 @@ for dataset in processing:
 col = 'experience'
 print('\n\n------',col,'-------')
 
+
+
 for dataset in processing:
     dataset[col].replace('>20', '21', inplace=True)
     dataset[col].replace('<1', '0', inplace=True)
     dataset[col] = pd.to_numeric(dataset[col])
+    
+    #Create a binned dictionary for the ranges
+    binning = dict(zip(range(0,5),['<5']*6))
+    binning.update(dict(zip(range(5,10),['5-10']*6)))
+    binning.update(dict(zip(range(10,22),['>10']*13)))
+    
+    dataset[col].replace(binning, inplace=True)
+
 
     print('NaN', dataset.name,':', (dataset[col].isna()).sum())
-
 
 
 #company_size : clean nan, strings, bins
@@ -119,7 +128,8 @@ col = 'company_type'
 print('\n\n------',col,'-------')
 
 
-binning = {'Funded Startup':'Startup',  'Early Stage Startup':'Startup'}
+binning = {'Funded Startup':'Startup',  'Early Stage Startup':'Startup', 'Public Sector': 'Public_Sector',
+           'Pvt Ltd':'Pvt_Ltd'}
 
 
 for dataset in processing:
@@ -244,8 +254,11 @@ def ohe_vars(df_in):
         
     #Create base OHE
     company_types_ohe = pd.get_dummies(df_in.company_type, prefix = 'Company_Type')
-    education_ohe = pd.get_dummies(df_in.education_level, prefix = 'Education_Higest')
+    company_size_ohe = pd.get_dummies(df_in.company_size, prefix = 'Company_Size')
+    experience_ohe = pd.get_dummies(df_in.experience, prefix = 'Years_Experience')
+    education_ohe = pd.get_dummies(df_in.education_level, prefix = 'Education_Highest')
     education_total_ohe = pd.get_dummies(df_in.education_level, prefix = 'Education_Total')
+    last_job_ohe = pd.get_dummies(df_in.last_new_job, prefix = 'New_Job')
     
   
     
@@ -279,7 +292,8 @@ def ohe_vars(df_in):
     education_total_ohe = pd.DataFrame(all_rows)
     
     #Combine OHE frames
-    combo = company_types_ohe.join([education_ohe, education_total_ohe])
+    combo = company_types_ohe.join([education_ohe, education_total_ohe, company_size_ohe,
+                                    experience_ohe,last_job_ohe])
     return combo
 
 #%%
@@ -302,7 +316,15 @@ test_ohe_out.to_csv(path+'\\Data\\'+'Testing_cleaned_impute_OHE.csv')
 
 # Change colmns to represent people who work at company and do/don't want to leave
 
+"""
+for col in ['Company_Type_NGO', 'Company_Type_Other', 'Company_Type_Public Sector',
+            'Company_Type_Pvt Ltd', 'Company_Type_Startup',
+            'Education_Higest_Bachelors', 'Education_Higest_Masters',
+            'Education_Higest_Phd', 'Education_Higest_PublicEducation',
+            'Education_Total_Bachelors', 'Education_Total_Masters',
+            'Education_Total_Phd', 'Education_Total_PublicEducation']:
 
+"""
     
 
 
@@ -323,34 +345,185 @@ def binary_column_parser(df_in, col):
     
     return filt
 
-filtered_columns = []
 
 
+def upsampler(list_in):
 
-for col in ['Company_Type_NGO', 'Company_Type_Other', 'Company_Type_Public Sector',
-            'Company_Type_Pvt Ltd', 'Company_Type_Startup',
-            'Education_Higest_Bachelors', 'Education_Higest_Masters',
-            'Education_Higest_Phd', 'Education_Higest_PublicEducation',
-            'Education_Total_Bachelors', 'Education_Total_Masters',
-            'Education_Total_Phd', 'Education_Total_PublicEducation']:
+    from sklearn.utils import resample
+   
+    
+    min_len = []
+    
+    for i in filtered_columns:
+        min_len.append(i.shape[0])
+    
+    
+    upsampled = []
+    
+    for i in filtered_columns:
+        
+        df_minority = i
+         
+        # Upsample minority class
+        df_minority_upsampled = resample(df_minority, 
+                                         replace=True,     # sample with replacement
+                                         n_samples=max(min_len),    # to match majority class
+                                         random_state=123) # reproducible results
+        
+        upsampled.append(df_minority_upsampled.reset_index(drop=True))
 
-    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+    upsampled_out = pd.DataFrame(upsampled).T
+    return upsampled_out
 
 
 #%%
 
-for i in range(len(filtered_columns)):
-    name_df = filtered_columns[i].name
-    filtered_columns[i].to_csv(path+'\Data\Binary_target_'+name_df+'.csv')
-    
+##
+#
+# Run binary target filter and upsampler
+# on all ohe columns and save.
+#
+##
+
+
+#Company Type
+
+##  Inputs  ##
+file_name = 'career'
+columns_run = ['Company_Type_NGO', 'Company_Type_Other', 'Company_Type_Public_Sector',
+            'Company_Type_Pvt_Ltd', 'Company_Type_Startup']
+
+
+#Run binatry target filter
+filtered_columns = []
+
+for col in columns_run:
+
+    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+
+#Upsample Data
+data_out=upsampler(filtered_columns)
+
+#Save Data  
+data_out.to_csv(path+'\Data\Binary_target_upsampled_'+file_name+'.csv', index=False)
 
 
 
 
+#highest_education Type
+
+##  Inputs  ##
+file_name = 'highest_education'
+columns_run = ['Education_Highest_Bachelors', 'Education_Highest_Masters',
+               'Education_Highest_Phd', 'Education_Highest_PublicEducation',]
+
+
+#Run binatry target filter
+filtered_columns = []
+
+for col in columns_run:
+
+    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+
+#Upsample Data
+data_out=upsampler(filtered_columns)
+
+#Save Data  
+data_out.to_csv(path+'\Data\Binary_target_upsampled_'+file_name+'.csv', index=False)
 
 
 
 
+#total_education Type
+
+##  Inputs  ##
+file_name = 'total_education'
+columns_run = ['Education_Total_Bachelors', 'Education_Total_Masters',
+               'Education_Total_Phd', 'Education_Total_PublicEducation',]
+
+
+#Run binatry target filter
+filtered_columns = []
+
+for col in columns_run:
+
+    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+
+#Upsample Data
+data_out=upsampler(filtered_columns)
+
+#Save Data  
+data_out.to_csv(path+'\Data\Binary_target_upsampled_'+file_name+'.csv', index=False)
+
+
+
+#company_size Type
+
+##  Inputs  ##
+file_name = 'company_size'
+columns_run = ['Company_Size_Large', 'Company_Size_Medium', 'Company_Size_Small',]
+
+
+#Run binatry target filter
+filtered_columns = []
+
+for col in columns_run:
+
+    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+
+#Upsample Data
+data_out=upsampler(filtered_columns)
+
+#Save Data  
+data_out.to_csv(path+'\Data\Binary_target_upsampled_'+file_name+'.csv', index=False)
+
+
+
+
+#years_exp Type
+
+##  Inputs  ##
+file_name = 'years_exp'
+columns_run = ['Years_Experience_5-10', 'Years_Experience_<5', 'Years_Experience_>10']
+
+
+#Run binatry target filter
+filtered_columns = []
+
+for col in columns_run:
+
+    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+
+#Upsample Data
+data_out=upsampler(filtered_columns)
+
+#Save Data  
+data_out.to_csv(path+'\Data\Binary_target_upsampled_'+file_name+'.csv', index=False)
+
+
+
+
+#new_job Type
+
+##  Inputs  ##
+file_name = 'new_job'
+columns_run = ['New_Job_0.0', 'New_Job_1.0', 'New_Job_2.0', 'New_Job_3.0',
+               'New_Job_4.0', 'New_Job_5.0']
+
+
+#Run binatry target filter
+filtered_columns = []
+
+for col in columns_run:
+
+    filtered_columns.append(binary_column_parser(train_ohe_out, col))
+
+#Upsample Data
+data_out=upsampler(filtered_columns)
+
+#Save Data  
+data_out.to_csv(path+'\Data\Binary_target_upsampled_'+file_name+'.csv', index=False)
+#%%
 
 
 

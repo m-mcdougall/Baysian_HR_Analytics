@@ -23,25 +23,28 @@ genMCMC = function( data , numSavedSteps=50000 , saveName=NULL ) {
   # with one component named y being a vector of integer 0,1 values,
   # and one component named s being a factor of subject identifiers.
   
-  yA = data[1]
-  yB = data[2]
-  yC = data[3]
-  
+  print('Here1')
+  yA = data$Company_Type_NGO
+  yB = data$Company_Type_Other
+  yC = data$Company_Type_Startup
+  print('Here2')
   y = c(yA, yB, yC)
   s = c(rep(1, length(yA)), rep(2, length(yB)), rep(3, length(yC)))
-  
+
+  print('Here1')
   # Do some checking that data make sense:
-  if ( any( y!=0 & y!=1) ) { stop("All y values must be 0 or 1.") }
+  #if ( any( y!=0 & y!=1) ) { stop("All y values must be 0 or 1.") }
   
   Ntotal = length(y)
   Nsubj = length(unique(s))
-  
+  print('Here3')
   # Specify the data in a list, for later shipment to JAGS:
   dataList = list(
     y = y,
     s = s,
     Ntotal = Ntotal
   )
+  print('Here1')
   #-----------------------------------------------------------------------------
   # THE MODEL.
   modelString = "
