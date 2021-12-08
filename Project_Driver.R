@@ -25,13 +25,24 @@ rm(list=ls())  # Careful! This clears all of R's memory!
 #------------------------------------------------------------------------------- 
 # Read the data 
 
-#data_ngo = read.csv("Data/Binary_target_Company_Type_NGO.csv")[2]
-#data_public = read.csv("Data/Binary_target_Company_Type_Public Sector.csv")[2]
-#data_private = read.csv("Data/Binary_target_Company_Type_Pvt Ltd.csv")[2]
+#Company Type
+#myData = read.csv("Data/Binary_target_upsampled_career.csv")
 
-myData = read.csv("Data/Binary_target_upsampled_career.csv")
+#Company Size
+#myData = read.csv("Data/Binary_target_upsampled_company_size.csv")
 
-#myData=list(data_ngo, data_public,data_private)
+#Highest Education Achieved
+#myData = read.csv("Data/Binary_target_upsampled_highest_education.csv")
+
+#Most Recent Job
+#myData = read.csv("Data/Binary_target_upsampled_new_job.csv")
+
+#Total Education
+myData = read.csv("Data/Binary_target_upsampled_total_education.csv")
+
+#Years of Experience
+#myData = read.csv("Data/Binary_target_upsampled_years_exp.csv")
+
 
 #------------------------------------------------------------------------------- 
 # Load the relevant model into R's working memory:

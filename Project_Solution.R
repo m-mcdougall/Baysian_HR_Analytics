@@ -24,19 +24,71 @@ genMCMC = function( data , numSavedSteps=50000 , saveName=NULL ) {
   # and one component named s being a factor of subject identifiers.
   
   print('Here1')
-  yA = data$Company_Type_NGO
-  yB = data$Company_Type_Other
-  yC = data$Company_Type_Startup
+  #Company Types
+  # yA = data$Company_Type_NGO
+  # yB = data$Company_Type_Other
+  # yC = data$Company_Type_Public_Sector
+  # yD = data$Company_Type_Pvt_Ltd
+  # yE = data$Company_Type_Startup
+  
+  #Company Size
+  # yA = data$Company_Size_Large
+  # yB = data$Company_Size_Medium
+  # yC = data$Company_Size_Small
+  
+  #Experience
+  # yA = data$Years_Experience_between_five_and_ten
+  # yB = data$Years_Experience_less_than_five
+  # yC = data$Years_Experience_more_than_ten
+  
+  #Most recent job
+  # yA = data$New_Job_zero
+  # yB = data$New_Job_one
+  # yC = data$New_Job_two
+  # yD = data$New_Job_three
+  # yE = data$New_Job_four
+  # yF = data$New_Job_five
+  
+  
+  #Highest Education
+  # yA = data$Education_Highest_Bachelors
+  # yB = data$Education_Highest_Masters
+  # yC = data$Education_Highest_Phd
+  # yD = data$Education_Highest_PublicEducation
+  
+  #Highest Education
+  yA = data$Education_Total_Bachelors
+  yB = data$Education_Total_Masters
+  yC = data$Education_Total_Phd
+  yD = data$Education_Total_PublicEducation
+  
   print('Here2')
+  #3 groups
+  # y = c(yA, yB, yC)
+  # s = c(rep(1, length(yA)), rep(2, length(yB)), rep(3, length(yC)))
+
+  #4 groups
   y = c(yA, yB, yC)
-  s = c(rep(1, length(yA)), rep(2, length(yB)), rep(3, length(yC)))
+  s = c(rep(1, length(yA)), rep(2, length(yB)), rep(3, length(yC)), 
+        rep(4, length(yD)))
+  
+  #5 groups
+  # y = c(yA, yB, yC, yD, yE)
+  # s = c(rep(1, length(yA)), rep(2, length(yB)), rep(3, length(yC)),
+  #       rep(4, length(yD)), rep(5, length(yE)))
+  
+  #6 groups
+  # y = c(yA, yB, yC, yD, yE)
+  # s = c(rep(1, length(yA)), rep(2, length(yB)), rep(3, length(yC)),
+  #       rep(4, length(yD)), rep(5, length(yE)), rep(6, length(yF)) )
 
   print('Here1')
   # Do some checking that data make sense:
-  #if ( any( y!=0 & y!=1) ) { stop("All y values must be 0 or 1.") }
+  if ( any( y!=0 & y!=1) ) { stop("All y values must be 0 or 1.") }
   
   Ntotal = length(y)
   Nsubj = length(unique(s))
+  
   print('Here3')
   # Specify the data in a list, for later shipment to JAGS:
   dataList = list(
@@ -47,17 +99,57 @@ genMCMC = function( data , numSavedSteps=50000 , saveName=NULL ) {
   print('Here1')
   #-----------------------------------------------------------------------------
   # THE MODEL.
-  modelString = "
+  modelString3 = "
   model {
   for ( i in 1:Ntotal ) {
   y[i] ~ dbern( theta[s[i]] )
   }
   theta[1] ~ dbeta(1, 1)
   theta[2] ~ dbeta(1, 1)
-  theta[3] ~ dbeta(10, 10)
+  theta[3] ~ dbeta(1, 1)
   }
   " # close quote for modelString
-  writeLines( modelString , con="TEMPmodel.txt" )
+  modelString4 = "
+  model {
+  for ( i in 1:Ntotal ) {
+  y[i] ~ dbern( theta[s[i]] )
+  }
+  theta[1] ~ dbeta(1, 1)
+  theta[2] ~ dbeta(1, 1)
+  theta[3] ~ dbeta(1, 1)
+  theta[4] ~ dbeta(1, 1)
+  }
+  " # close quote for modelString
+  modelString5 = "
+  model {
+  for ( i in 1:Ntotal ) {
+  y[i] ~ dbern( theta[s[i]] )
+  }
+  theta[1] ~ dbeta(1, 1)
+  theta[2] ~ dbeta(1, 1)
+  theta[3] ~ dbeta(1, 1)
+  theta[4] ~ dbeta(1, 1)
+  theta[5] ~ dbeta(1, 1)
+  }
+  " # close quote for modelString
+  
+  modelString6 = "
+  model {
+  for ( i in 1:Ntotal ) {
+  y[i] ~ dbern( theta[s[i]] )
+  }
+  theta[1] ~ dbeta(1, 1)
+  theta[2] ~ dbeta(1, 1)
+  theta[3] ~ dbeta(1, 1)
+  theta[4] ~ dbeta(1, 1)
+  theta[5] ~ dbeta(1, 1)
+  theta[6] ~ dbeta(1, 1)
+  }
+  " # close quote for modelString
+  
+  
+  #modelString# --> # indicates how many thetas
+  writeLines( modelString4, con="TEMPmodel.txt" )
   #-----------------------------------------------------------------------------
   # INTIALIZE THE CHAINS.
   # Initial values of MCMC chains based on data:
