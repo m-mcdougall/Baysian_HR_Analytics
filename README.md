@@ -12,7 +12,7 @@ Data Scientist attrition rate information sourced from the HR Analytics: Job Cha
 
 To generate the data for yourself, run the scripts in the following order:  
 1. Data_Cleaning.py  
-    -Cleans data and removes extranious features
+    - Cleans data and removes extranious features
 
 2. Project_Solution.R   
     - Sources Projet_Driver.R and DBDA2E-utilities.R to generate MCMC chains
